@@ -28,10 +28,11 @@ class _MainScreenState extends State<MainScreen> {
   var get_food_pic = [];
   var get_food_price = [];
   var get_food_vendor = [];
+  var get_data;
 
   @override
   void fetch_data() async {
-    var get_data = await Dio().get(database);
+    get_data = await Dio().get(database);
 
     setState(() {
       total_menu = get_data.data['foods'].length;
@@ -50,6 +51,16 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     fetch_data();
+  }
+
+  void order_food(food) async {
+    var get_order_list = get_data.data['order'].length;
+    var put_order = await Dio().patch(database, data: {
+      "order": [
+        {"food": get_food_name[food], "food_id": food, 'from': 'WanZ'}
+      ]
+    });
+    print(put_order);
   }
 
   Widget build(BuildContext context) {
@@ -105,6 +116,7 @@ class _MainScreenState extends State<MainScreen> {
                   width: MediaQuery.of(context).size.width,
                   height: 550,
                   child: ListView(scrollDirection: Axis.horizontal, children: [
+                    SizedBox(width: 30),
                     if (total_menu != 0)
                       for (var i = 0; i < total_menu; i++)
                         Row(children: [
@@ -167,7 +179,7 @@ class _MainScreenState extends State<MainScreen> {
                                                         20.0)),
                                             child: FlatButton(
                                                 onPressed: (() {
-                                                  print(1);
+                                                  order_food(i);
                                                 }),
                                                 child: Text("Buy",
                                                     style: TextStyle(
