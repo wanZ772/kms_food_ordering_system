@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:food_order/info_page.dart';
 
 String database =
     'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system.json';
@@ -128,15 +129,24 @@ class _MainScreenState extends State<MainScreen> {
                                         fontSize: 15, color: Colors.grey),
                                   ),
                                   SizedBox(height: 30),
-                                  SizedBox(
-                                    height: 300,
-                                    width: 300,
-                                    child: ClipOval(
-                                      child: Image(
-                                          image: NetworkImage(get_food_pic[i]),
-                                          fit: BoxFit.cover),
-                                    ),
-                                  ),
+                                  GestureDetector(
+                                      onTap: (() {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    MenuInfo()));
+                                      }),
+                                      child: SizedBox(
+                                        height: 300,
+                                        width: 300,
+                                        child: ClipOval(
+                                          child: Image(
+                                              image:
+                                                  NetworkImage(get_food_pic[i]),
+                                              fit: BoxFit.cover),
+                                        ),
+                                      )),
                                   SizedBox(width: 20),
                                   Text("RM " + get_food_price[i].toString(),
                                       style: TextStyle(
