@@ -2,16 +2,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:food_order/info_page.dart';
+import 'package:food_order/menu_list.dart';
 
 String database =
     'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system.json';
+String order =
+    'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/order.json';
 
-void main() async {
+void main() {
   runApp(MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: MainScreen(),
-      title: "KMS Food"));
+    home: MainScreen(),
+    title: "KMS Food App",
+  ));
 }
 
 class MainScreen extends StatefulWidget {
@@ -22,202 +24,135 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  var get_menu;
-  var total_menu = 0;
-  var get_food_name = ['food'];
-  var get_food_pic = [];
-  var get_food_price = [];
-  var get_food_vendor = [];
-  var get_data;
-
   @override
-  void fetch_data() async {
-    get_data = await Dio().get(database);
-
-    setState(() {
-      total_menu = get_data.data['foods'].length;
-
-      for (var i = 0; i < total_menu; i++) {
-        get_food_name.add(get_data.data['foods'][i]['name']);
-        get_food_vendor.add(get_data.data['foods'][i]['vendor']);
-        get_food_pic.add(get_data.data['foods'][i]['pic']);
-        get_food_price.add(get_data.data['foods'][i]['price']);
-      }
-    });
-    get_food_name.remove('food');
-    print(get_food_name);
-  }
-
-  void initState() {
-    super.initState();
-    fetch_data();
-  }
-
-  void order_food(food) async {
-    var get_order_list = get_data.data['order'].length;
-    var put_order = await Dio().patch(database, data: {
-      "order": [
-        {"food": get_food_name[food], "food_id": food, 'from': 'WanZ'}
-      ]
-    });
-    print(put_order);
-  }
-
+  int j = 0;
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.yellow[700],
-      body: Stack(
-        alignment: Alignment.center,
-        // ignore: prefer_const_literals_to_create_immutables
-        children: <Widget>[
-          Positioned(
-              top: 10,
-              child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: SafeArea(
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                        Icon(Icons.account_circle_rounded,
-                            color: Colors.white, size: 40),
+        body: Stack(
+      alignment: Alignment.center,
+      children: [
+        Positioned(
+            top: 30,
+            child: SafeArea(
+                child: Container(
+                    width: MediaQuery.of(context).size.width / 1.1,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                            height: 30,
+                            width: 30,
+                            decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(.2),
+                                    offset: Offset(0, 3),
+                                    blurRadius: 1,
+                                  )
+                                ],
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5)),
+                            child: Icon(Icons.arrow_back_ios_new, size: 30)),
                         Text("KMS Food App",
                             style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black)),
-                        Icon(Icons.search, color: Colors.white, size: 40)
-                      ])))),
-          Positioned(
-              top: 150,
-              child: Container(
-                  width: MediaQuery.of(context).size.width / 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const <Widget>[
-                      Icon(Icons.restaurant_menu,
-                          color: Colors.green, size: 40),
-                      Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                        size: 40,
-                      ),
-                      Icon(
-                        Icons.shopping_cart,
-                        color: Colors.grey,
-                        size: 40,
-                      ),
-                    ],
-                  ))),
-          Positioned(
-              top: 200,
-              left: 0,
-              child: Container(
-                  padding: EdgeInsets.all(5),
-                  width: MediaQuery.of(context).size.width,
-                  height: 550,
-                  child: ListView(scrollDirection: Axis.horizontal, children: [
-                    SizedBox(width: 30),
-                    if (total_menu != 0)
-                      for (var i = 0; i < total_menu; i++)
-                        Row(children: [
-                          Container(
-                            child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Text(
-                                    get_food_name[i],
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                        color: Colors.black),
-                                  ),
-                                  Text(
-                                    get_food_vendor[i],
-                                    style: TextStyle(
-                                        fontSize: 15, color: Colors.grey),
-                                  ),
-                                  SizedBox(height: 30),
-                                  GestureDetector(
-                                      onTap: (() {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    MenuInfo()));
-                                      }),
-                                      child: SizedBox(
-                                        height: 300,
-                                        width: 300,
-                                        child: ClipOval(
-                                          child: Image(
-                                              image:
-                                                  NetworkImage(get_food_pic[i]),
-                                              fit: BoxFit.cover),
-                                        ),
-                                      )),
-                                  SizedBox(width: 20),
-                                  Text("RM " + get_food_price[i].toString(),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20,
-                                          color: Colors.black)),
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Container(
-                                            height: 40,
-                                            width: 100,
-                                            decoration: BoxDecoration(
-                                                color: Colors.yellow,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        20.0)),
-                                            child: FlatButton(
-                                                onPressed: (() {
-                                                  order_food(i);
-                                                }),
-                                                child: Text("Buy",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold)))),
-                                        Container(
-                                            height: 40,
-                                            width: 100,
-                                            decoration: BoxDecoration(
-                                                color: Colors.black,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        20.0)),
-                                            child: FlatButton(
-                                                onPressed: (() {
-                                                  print(1);
-                                                }),
-                                                child: Text("Add to cart",
-                                                    style: TextStyle(
-                                                        color: Colors.yellow,
-                                                        fontWeight:
-                                                            FontWeight.bold)))),
-                                      ]),
-                                  SizedBox(
-                                    height: 30,
-                                  )
-                                ]),
-                            width: 300,
-                            height: 550,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(30),
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image(
+                                image: NetworkImage(
+                                    'https://raw.githubusercontent.com/wanZ772/kms_food_ordering_system/master/image_2021-09-16_181440.png'),
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover))
+                      ],
+                    )))),
+        Positioned(
+            top: 140,
+            child: Container(
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                          width: 300,
+                          height: 40,
+                          child: TextField(
+                            decoration: InputDecoration(
+                                fillColor: Colors.grey,
+                                focusColor: Colors.grey,
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide:
+                                        BorderSide(color: Colors.white)),
+                                hintText: "Search food . . "),
+                          )),
+                      GestureDetector(
+                          child:
+                              Icon(Icons.search, size: 30, color: Colors.black))
+                    ]))),
+        Positioned(
+            top: 180,
+            child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: 70,
+                padding: EdgeInsets.all(5),
+                child: ListView(
+                  padding: EdgeInsets.all(10),
+                  scrollDirection: Axis.horizontal,
+                  children: <Widget>[
+                    Container(
+                        width: 200,
+                        height: 30,
+                        decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(40)),
+                        child: FlatButton.icon(
+                            onPressed: (() => print(1)),
+                            icon: Icon(Icons.menu_book_outlined,
                                 color: Colors.white),
-                          ),
-                          SizedBox(width: 30)
-                        ])
-                  ])))
-        ],
-      ),
-    );
+                            label: Text(
+                              "Menu",
+                              style: TextStyle(color: Colors.white),
+                            ))),
+                    Container(
+                        width: 200,
+                        height: 30,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(40)),
+                        child: FlatButton.icon(
+                            onPressed: (() => print(1)),
+                            icon: Icon(Icons.favorite_border,
+                                color: Colors.grey[400]),
+                            label: Text(
+                              "Favorite",
+                              style: TextStyle(color: Colors.grey),
+                            ))),
+                    Container(
+                        width: 200,
+                        height: 30,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(40)),
+                        child: FlatButton.icon(
+                            onPressed: (() => print(1)),
+                            icon: Icon(Icons.shopping_cart_outlined,
+                                color: Colors.grey[400]),
+                            label: Text(
+                              "Your order",
+                              style: TextStyle(color: Colors.grey),
+                            ))),
+                  ],
+                ))),
+        // Positioned(top: 250, child: MenuList()),
+        FutureBuilder(builder: (_, builder) {
+          try {
+            return MenuList();
+          } catch (e) {
+            return Text("Please wait");
+          }
+        })
+      ],
+    ));
   }
 }
