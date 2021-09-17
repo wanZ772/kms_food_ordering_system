@@ -4,11 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:food_order/menu_list.dart';
 
-String database =
-    'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system.json';
-String order =
-    'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/order.json';
-
 void main() {
   runApp(MaterialApp(
     home: MainScreen(),
@@ -144,14 +139,7 @@ class _MainScreenState extends State<MainScreen> {
                             ))),
                   ],
                 ))),
-        // Positioned(top: 250, child: MenuList()),
-        FutureBuilder(builder: (_, builder) {
-          try {
-            return MenuList();
-          } catch (e) {
-            return Text("Please wait");
-          }
-        })
+        Positioned(top: 250, child: MenuList()),
       ],
     ));
   }
