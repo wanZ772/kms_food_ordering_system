@@ -6,6 +6,8 @@ String database =
     'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system.json';
 String order =
     'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/order.json';
+String favorite_food =
+    'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/users/0/fav.json';
 
 class MenuList extends StatefulWidget {
   MenuList({Key? key}) : super(key: key);
@@ -21,30 +23,55 @@ class _MenuListState extends State<MenuList> {
   var odd = [];
   var get_data;
 
+  var favorite_list = [1];
+
+  var favorite_color = {};
+
   void fetch_data() async {
     get_data = await Dio().get(database);
 
     setState(() {
       get_length = get_data.data['foods'].length;
       for (var i = 0; i < get_length; i++) {
+        if (favorite_list.contains(i)) {
+          favorite_color[i] = Colors.red;
+        } else {
+          favorite_color[i] = Colors.grey;
+        }
         if ((i % 2) == 0) {
           eve.add(i);
-          print("eve");
-          print(i % 2);
         }
         if ((i % 2) == 1) {
           odd.add(i);
-          print(i % 2);
         }
       }
     });
     print(eve);
     print(odd);
+    print(favorite_color[0]);
   }
 
   void initState() {
     super.initState();
     fetch_data();
+  }
+
+  void add_favorite_eve(food_id) {}
+  void add_favorite(food_id) async {
+    if (favorite_list.contains(food_id) == false) {
+      setState(() {
+        favorite_color[food_id] = Colors.red;
+      });
+
+      var get_favorite = await Dio().get(favorite_food);
+      int get_total_favorite = get_favorite.data.length;
+      await Dio().patch(favorite_food,
+          data: {get_total_favorite.toString(): food_id.toString()});
+    } else {
+      setState(() {
+        favorite_color[food_id] = Colors.grey;
+      });
+    }
   }
 
   Widget build(BuildContext context) {
@@ -72,7 +99,12 @@ class _MenuListState extends State<MenuList> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      Icon(Icons.favorite, color: Colors.red),
+                                      GestureDetector(
+                                          onTap: () {
+                                            add_favorite(i);
+                                          },
+                                          child: Icon(Icons.favorite,
+                                              color: favorite_color[i])),
                                       SizedBox(width: 10)
                                     ],
                                   ),
@@ -153,7 +185,13 @@ class _MenuListState extends State<MenuList> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      Icon(Icons.favorite, color: Colors.red),
+                                      GestureDetector(
+                                        onTap: () {
+                                          add_favorite_eve(i);
+                                        },
+                                        child: Icon(Icons.favorite,
+                                            color: favorite_color[i]),
+                                      ),
                                       SizedBox(width: 10)
                                     ],
                                   ),
