@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:food_order/header.dart';
 import 'package:food_order/main.dart';
+import 'package:dio/dio.dart';
+
+String favorite_food =
+    'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/users/0/fav';
 
 class FavoriteScreen extends StatefulWidget {
   FavoriteScreen({Key? key}) : super(key: key);
@@ -10,6 +14,24 @@ class FavoriteScreen extends StatefulWidget {
 }
 
 class _FavoriteScreenState extends State<FavoriteScreen> {
+  void initState() {
+    super.initState();
+    get_fav();
+  }
+
+  var favorite_list = [];
+  void get_fav() async {
+    var get_favorite = await Dio().get(favorite_food + ".json");
+    var get_favorite_list = get_favorite.data;
+
+    for (var i = 0; i < get_favorite_list.length; i++) {
+      if (get_favorite_list[i.toString()] != null) {
+        favorite_list.add(get_favorite_list[i.toString()]);
+      }
+    }
+    print(favorite_list);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,9 +159,33 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                           ))),
                 ],
               ))),
-      Positioned(
-          top: MediaQuery.of(context).size.height / 2,
-          child: Icon(Icons.favorite, color: Colors.grey, size: 200))
+      if (favorite_list == 0)
+        Positioned(
+            top: MediaQuery.of(context).size.height / 2,
+            child: Icon(Icons.favorite, color: Colors.grey, size: 200))
+      else
+        Positioned(
+            bottom: 10,
+            child: Container(
+              // padding: EdgeInsets.all(10),
+              height: MediaQuery.of(context).size.height / 1.5,
+              width: MediaQuery.of(context).size.width,
+              child: ListView(
+                children: [
+                  for (var i = 0; i < favorite_list.length; i++)
+                    Column(children: [
+                      Container(
+                        height: 200,
+                        width: MediaQuery.of(context).size.width - 20,
+                        decoration: BoxDecoration(color: Colors.black),
+                      ),
+                      SizedBox(
+                        height: 30,
+                      )
+                    ])
+                ],
+              ),
+            ))
     ]));
   }
 }

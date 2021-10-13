@@ -7,7 +7,7 @@ String database =
 String order =
     'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/order.json';
 String favorite_food =
-    'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/users/0/fav.json';
+    'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/users/0/fav';
 
 class MenuList extends StatefulWidget {
   MenuList({Key? key}) : super(key: key);
@@ -23,21 +23,33 @@ class _MenuListState extends State<MenuList> {
   var odd = [];
   var get_data;
 
-  var favorite_list = [1];
+  var favorite_list = [];
+  var color_set = {};
 
-  var favorite_color = {};
+  var favorite_color = [];
+  var color_sets = [];
 
   void fetch_data() async {
     get_data = await Dio().get(database);
 
+    var get_favorite = await Dio().get(favorite_food + ".json");
+    var get_favorite_list = get_favorite.data;
+    for (var i = 0; i < get_favorite_list.length; i++) {
+      favorite_list.add(get_favorite_list[i.toString()]);
+    }
     setState(() {
       get_length = get_data.data['foods'].length;
-      for (var i = 0; i < get_length; i++) {
-        if (favorite_list.contains(i)) {
-          favorite_color[i] = Colors.red;
+
+      for (var test = 0; test < get_length; test++) {
+        if (favorite_list.contains(test)) {
+          favorite_color.add(Colors.red);
+          color_sets.add("red");
         } else {
-          favorite_color[i] = Colors.grey;
+          favorite_color.add(Colors.grey);
+          color_sets.add("grey");
         }
+      }
+      for (var i = 0; i < get_length; i++) {
         if ((i % 2) == 0) {
           eve.add(i);
         }
@@ -48,7 +60,7 @@ class _MenuListState extends State<MenuList> {
     });
     print(eve);
     print(odd);
-    print(favorite_color[0]);
+    print(color_set);
   }
 
   void initState() {
@@ -56,22 +68,27 @@ class _MenuListState extends State<MenuList> {
     fetch_data();
   }
 
-  void add_favorite_eve(food_id) {}
   void add_favorite(food_id) async {
     if (favorite_list.contains(food_id) == false) {
+      print("new favorite:" + food_id.toString());
       setState(() {
         favorite_color[food_id] = Colors.red;
+        color_sets[food_id] = "red";
       });
+      favorite_list.add(food_id);
 
-      var get_favorite = await Dio().get(favorite_food);
-      int get_total_favorite = get_favorite.data.length;
-      await Dio().patch(favorite_food,
-          data: {get_total_favorite.toString(): food_id.toString()});
+      await Dio()
+          .patch(favorite_food + ".json", data: {food_id.toString(): food_id});
     } else {
       setState(() {
         favorite_color[food_id] = Colors.grey;
+        color_sets[food_id] = "red";
+        favorite_list.remove(food_id);
+        print("removed favorite:" + food_id.toString());
       });
+      await Dio().delete(favorite_food + "/" + food_id.toString() + ".json");
     }
+    print(favorite_list);
   }
 
   Widget build(BuildContext context) {
@@ -101,10 +118,12 @@ class _MenuListState extends State<MenuList> {
                                     children: [
                                       GestureDetector(
                                           onTap: () {
-                                            add_favorite(i);
+                                            print(odd[i]);
+                                            return add_favorite(odd[i]);
                                           },
                                           child: Icon(Icons.favorite,
-                                              color: favorite_color[i])),
+                                              size: 30,
+                                              color: favorite_color[odd[i]])),
                                       SizedBox(width: 10)
                                     ],
                                   ),
@@ -187,10 +206,12 @@ class _MenuListState extends State<MenuList> {
                                     children: [
                                       GestureDetector(
                                         onTap: () {
-                                          add_favorite_eve(i);
+                                          print(eve[i]);
+                                          return add_favorite(eve[i]);
                                         },
                                         child: Icon(Icons.favorite,
-                                            color: favorite_color[i]),
+                                            size: 30,
+                                            color: favorite_color[eve[i]]),
                                       ),
                                       SizedBox(width: 10)
                                     ],
