@@ -38,6 +38,7 @@ class _MenuListState extends State<MenuList> {
     get_favorite = await Dio().get(favorite_food + ".json");
     var get_favorite_list = get_favorite.data;
     for (var i = 0; i < get_favorite_list.length; i++) {
+      print(get_favorite.data[i.toString()]);
       if (get_favorite_list[i.toString()] != null) {
         favorite_list.add(get_favorite_list[i.toString()]['id']);
       }
@@ -46,8 +47,8 @@ class _MenuListState extends State<MenuList> {
     setState(() {
       get_length = get_data.data['foods'].length;
 
-      for (var test = 0; test < get_length; test++) {
-        if (favorite_list.contains(test)) {
+      for (var i = 0; i < get_length; i++) {
+        if (favorite_list.contains(i)) {
           favorite_color.add(Colors.red);
           color_sets.add("red");
         } else {
@@ -66,7 +67,27 @@ class _MenuListState extends State<MenuList> {
     });
     print(eve);
     print(odd);
-    print(color_set);
+    print("favorite list: " + favorite_list.toString());
+    print("color sets: $color_sets");
+  }
+
+  void order_food(food_id) async {
+    var get_order = await Dio().get(
+        "https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/order.json");
+
+    await Dio().patch(
+        "https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/order.json",
+        data: {
+          (get_order.data.length - 1).toString(): {
+            "food_id": food_id,
+            "quantity": 1,
+            "name": get_data.data['foods'][food_id]['name'],
+            "pic": get_data.data['foods'][food_id]['pic'],
+            "price": get_data.data['foods'][food_id]['price'],
+            "vendor": get_data.data['foods'][food_id]['vendor'],
+            "from": "Wan Z"
+          }
+        });
   }
 
   void initState() {
@@ -83,7 +104,8 @@ class _MenuListState extends State<MenuList> {
       var get_current_list = await Dio().get(favorite_food + ".json");
       await Dio().patch(favorite_food + ".json", data: {
         (get_current_list.data.length - 1).toString(): {
-          "id": (get_current_list.data.length - 1).toString(),
+          "id": food_id,
+          "fav_id": (get_current_list.data.length - 1).toString(),
           "name": get_data.data['foods'][food_id]['name'],
           "pic": get_data.data['foods'][food_id]['pic'],
           "vendor": get_data.data['foods'][food_id]['vendor'],
@@ -103,7 +125,6 @@ class _MenuListState extends State<MenuList> {
       });
       await Dio().delete(favorite_food + "/" + food_id.toString() + ".json");
     }
-    print(favorite_list);
   }
 
   Widget build(BuildContext context) {
@@ -172,7 +193,9 @@ class _MenuListState extends State<MenuList> {
                                         child: Text("Buy now",
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold)),
-                                        onPressed: (() => print(1)),
+                                        onPressed: () {
+                                          order_food(i);
+                                        },
                                       )),
                                   Container(
                                       height: 30,
@@ -261,7 +284,7 @@ class _MenuListState extends State<MenuList> {
                                         child: Text("Buy now",
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold)),
-                                        onPressed: (() => print(1)),
+                                        onPressed: (() => order_food(i)),
                                       )),
                                   Container(
                                       height: 30,

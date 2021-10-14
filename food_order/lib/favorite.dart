@@ -28,6 +28,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     get_fav();
   }
 
+  int order_quantity = 1;
   var list_ready = false;
   var favorite_list = [];
   var get_favorite_list;
@@ -40,8 +41,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         list_ready;
         for (var i = 0; i < get_favorite_list.length; i++) {
           if (get_favorite_list[i.toString()] != null) {
-            favorite_list.add(get_favorite_list[i.toString()]);
-            print(get_favorite_list[i.toString()]);
+            if (favorite_list.contains(get_favorite_list[i.toString()]) ==
+                false) {
+              favorite_list.add(get_favorite_list[i.toString()]);
+              print(get_favorite_list[i.toString()]);
+            }
           }
         }
         list_ready = true;
@@ -194,108 +198,157 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               child: ListView(
                 children: [
                   for (var i = 0; i < favorite_list.length; i++)
-                    Column(children: [
-                      Container(
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: 30,
-                            ),
-                            SizedBox(
-                              height: 300,
-                              width: 300,
-                              child: ClipOval(
-                                child: Image(
-                                    fit: BoxFit.cover,
-                                    image:
-                                        NetworkImage(favorite_list[i]['pic'])),
+                    if (favorite_list[i] != null)
+                      Column(children: [
+                        Container(
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 30,
                               ),
-                            ),
-                            SizedBox(
-                              height: 30,
-                            ),
-                            Text(
-                              favorite_list[i]['name'],
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Text(favorite_list[i]['vendor'],
-                                style: TextStyle(color: Colors.grey)),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Text("RM " +
-                                favorite_list[i]['price'].toString() +
-                                ".00"),
-                            SizedBox(
-                              height: 30,
-                            ),
-                            Container(
-                                width: 250,
+                              SizedBox(
+                                height: 300,
+                                width: 300,
+                                child: ClipOval(
+                                  child: Image(
+                                      fit: BoxFit.cover,
+                                      image: NetworkImage(
+                                          favorite_list[i]['pic'])),
+                                ),
+                              ),
+                              SizedBox(
                                 height: 30,
-                                decoration: BoxDecoration(
-                                    color: Colors.yellow,
-                                    borderRadius: BorderRadius.circular(20)),
-                                child: FlatButton.icon(
-                                  icon: Icon(Icons.shopping_bag_outlined),
-                                  onPressed: () {
-                                    print(favorite_list[i]);
-                                    print("food: $i");
-                                  },
-                                  label: Text("Buy",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                )),
-                            SizedBox(
-                              height: 30,
-                            ),
-                            Container(
-                                width: 250,
+                              ),
+                              Text(
+                                favorite_list[i]['name'],
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Text(favorite_list[i]['vendor'],
+                                  style: TextStyle(color: Colors.grey)),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Text("RM " +
+                                  favorite_list[i]['price'].toString() +
+                                  ".00"),
+                              SizedBox(
                                 height: 30,
-                                decoration: BoxDecoration(
-                                    color: Colors.red[400],
-                                    borderRadius: BorderRadius.circular(20)),
-                                child: FlatButton.icon(
-                                  icon: Icon(Icons.remove_circle_outline,
-                                      color: Colors.white),
-                                  onPressed: () async {
-                                    await Dio()
-                                        .delete("$favorite_food/$i.json");
-                                    setState(() {
-                                      favorite_list.removeWhere(
-                                          (favorite_list) =>
-                                              favorite_list['id'] == 0);
-                                      print("after delete: " +
-                                          favorite_list.toString());
-                                    });
-                                    return get_fav();
-                                  },
-                                  label: Text("Remove",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white)),
-                                )),
-                          ],
+                              ),
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                          color: Colors.yellow,
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      child: FlatButton(
+                                        child: Text(
+                                          "-",
+                                          style: TextStyle(
+                                            fontSize: 30,
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            order_quantity--;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Container(
+                                        width: 150,
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                            color: Colors.yellow,
+                                            borderRadius:
+                                                BorderRadius.circular(20)),
+                                        child: FlatButton.icon(
+                                          icon:
+                                              Icon(Icons.shopping_bag_outlined),
+                                          onPressed: () {
+                                            print(favorite_list[i]);
+                                            print("food: $i");
+                                          },
+                                          label: Text("Buy: $order_quantity",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold)),
+                                        )),
+                                    SizedBox(width: 10),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                          color: Colors.yellow,
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      child: FlatButton(
+                                        child: Text(
+                                          "+",
+                                          style: TextStyle(
+                                            fontSize: 30,
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            order_quantity++;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ]),
+                              SizedBox(
+                                height: 30,
+                              ),
+                              Container(
+                                  width: 250,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                      color: Colors.red[400],
+                                      borderRadius: BorderRadius.circular(20)),
+                                  child: FlatButton.icon(
+                                    icon: Icon(Icons.remove_circle_outline,
+                                        color: Colors.white),
+                                    onPressed: () async {
+                                      await Dio()
+                                          .delete("$favorite_food/$i.json");
+                                      setState(() {
+                                        favorite_list[i] = null;
+                                        print("after delete: " +
+                                            favorite_list.toString());
+                                      });
+                                      return get_fav();
+                                    },
+                                    label: Text("Remove",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white)),
+                                  )),
+                            ],
+                          ),
+                          height: 600,
+                          width: MediaQuery.of(context).size.width - 20,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                    offset: Offset(0, 0),
+                                    color: Colors.black,
+                                    blurRadius: 4)
+                              ]),
                         ),
-                        height: 600,
-                        width: MediaQuery.of(context).size.width - 20,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                  offset: Offset(0, 0),
-                                  color: Colors.black,
-                                  blurRadius: 4)
-                            ]),
-                      ),
-                      SizedBox(
-                        height: 30,
-                      )
-                    ])
+                        SizedBox(
+                          height: 30,
+                        )
+                      ])
                 ],
               ),
             ))
