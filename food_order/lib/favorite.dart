@@ -1,8 +1,17 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:food_order/header.dart';
 import 'package:food_order/main.dart';
 import 'package:dio/dio.dart';
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
+import 'dart:developer';
 
+var get_favorite;
 String favorite_food =
     'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/users/0/fav';
 
@@ -19,17 +28,25 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     get_fav();
   }
 
+  var list_ready = false;
   var favorite_list = [];
-  void get_fav() async {
-    var get_favorite = await Dio().get(favorite_food + ".json");
-    var get_favorite_list = get_favorite.data;
+  var get_favorite_list;
 
-    for (var i = 0; i < get_favorite_list.length; i++) {
-      if (get_favorite_list[i.toString()] != null) {
-        favorite_list.add(get_favorite_list[i.toString()]);
-      }
+  void get_fav() async {
+    get_favorite = await Dio().get(favorite_food + ".json");
+    get_favorite_list = get_favorite.data;
+    if (get_favorite_list.length > 0) {
+      setState(() {
+        list_ready;
+        for (var i = 0; i < get_favorite_list.length; i++) {
+          if (get_favorite_list[i.toString()] != null) {
+            favorite_list.add(get_favorite_list[i.toString()]);
+            print(get_favorite_list[i.toString()]);
+          }
+        }
+        list_ready = true;
+      });
     }
-    print(favorite_list);
   }
 
   @override
@@ -159,11 +176,15 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                           ))),
                 ],
               ))),
-      if (favorite_list == 0)
+      if (favorite_list.length == 0)
         Positioned(
             top: MediaQuery.of(context).size.height / 2,
-            child: Icon(Icons.favorite, color: Colors.grey, size: 200))
-      else
+            child: Icon(Icons.favorite, color: Colors.grey, size: 200)),
+      if (list_ready == false)
+        Positioned(
+            top: MediaQuery.of(context).size.height / 2,
+            child: Text("Please wait")),
+      if (list_ready == true)
         Positioned(
             bottom: 10,
             child: Container(
@@ -175,9 +196,101 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   for (var i = 0; i < favorite_list.length; i++)
                     Column(children: [
                       Container(
-                        height: 200,
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 30,
+                            ),
+                            SizedBox(
+                              height: 300,
+                              width: 300,
+                              child: ClipOval(
+                                child: Image(
+                                    fit: BoxFit.cover,
+                                    image:
+                                        NetworkImage(favorite_list[i]['pic'])),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 30,
+                            ),
+                            Text(
+                              favorite_list[i]['name'],
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text(favorite_list[i]['vendor'],
+                                style: TextStyle(color: Colors.grey)),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text("RM " +
+                                favorite_list[i]['price'].toString() +
+                                ".00"),
+                            SizedBox(
+                              height: 30,
+                            ),
+                            Container(
+                                width: 250,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                    color: Colors.yellow,
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: FlatButton.icon(
+                                  icon: Icon(Icons.shopping_bag_outlined),
+                                  onPressed: () {
+                                    print(favorite_list[i]);
+                                    print("food: $i");
+                                  },
+                                  label: Text("Buy",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                )),
+                            SizedBox(
+                              height: 30,
+                            ),
+                            Container(
+                                width: 250,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                    color: Colors.red[400],
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: FlatButton.icon(
+                                  icon: Icon(Icons.remove_circle_outline,
+                                      color: Colors.white),
+                                  onPressed: () async {
+                                    await Dio()
+                                        .delete("$favorite_food/$i.json");
+                                    setState(() {
+                                      favorite_list.removeWhere(
+                                          (favorite_list) =>
+                                              favorite_list['id'] == 0);
+                                      print("after delete: " +
+                                          favorite_list.toString());
+                                    });
+                                    return get_fav();
+                                  },
+                                  label: Text("Remove",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white)),
+                                )),
+                          ],
+                        ),
+                        height: 600,
                         width: MediaQuery.of(context).size.width - 20,
-                        decoration: BoxDecoration(color: Colors.black),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                  offset: Offset(0, 0),
+                                  color: Colors.black,
+                                  blurRadius: 4)
+                            ]),
                       ),
                       SizedBox(
                         height: 30,

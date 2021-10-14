@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'dart:ui';
 
+import 'package:food_order/favorite.dart';
+
 String database =
     'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system.json';
 String order =
@@ -28,15 +30,19 @@ class _MenuListState extends State<MenuList> {
 
   var favorite_color = [];
   var color_sets = [];
+  var get_favorite;
 
   void fetch_data() async {
     get_data = await Dio().get(database);
 
-    var get_favorite = await Dio().get(favorite_food + ".json");
+    get_favorite = await Dio().get(favorite_food + ".json");
     var get_favorite_list = get_favorite.data;
     for (var i = 0; i < get_favorite_list.length; i++) {
-      favorite_list.add(get_favorite_list[i.toString()]);
+      if (get_favorite_list[i.toString()] != null) {
+        favorite_list.add(get_favorite_list[i.toString()]['id']);
+      }
     }
+    print(favorite_list);
     setState(() {
       get_length = get_data.data['foods'].length;
 
@@ -70,15 +76,24 @@ class _MenuListState extends State<MenuList> {
 
   void add_favorite(food_id) async {
     if (favorite_list.contains(food_id) == false) {
-      print("new favorite:" + food_id.toString());
       setState(() {
         favorite_color[food_id] = Colors.red;
         color_sets[food_id] = "red";
       });
-      favorite_list.add(food_id);
+      var get_current_list = await Dio().get(favorite_food + ".json");
+      await Dio().patch(favorite_food + ".json", data: {
+        (get_current_list.data.length - 1).toString(): {
+          "id": (get_current_list.data.length - 1).toString(),
+          "name": get_data.data['foods'][food_id]['name'],
+          "pic": get_data.data['foods'][food_id]['pic'],
+          "vendor": get_data.data['foods'][food_id]['vendor'],
+          "price": get_data.data['foods'][food_id]['price']
+        }
+      });
 
-      await Dio()
-          .patch(favorite_food + ".json", data: {food_id.toString(): food_id});
+      print("new favorite:" + food_id.toString());
+
+      favorite_list.add(food_id);
     } else {
       setState(() {
         favorite_color[food_id] = Colors.grey;
