@@ -11,9 +11,12 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'dart:developer';
 
+var favorite_quantity = [];
 var get_favorite;
 String favorite_food =
     'https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/users/0/fav';
+String order =
+    "https://wanz-6124a-default-rtdb.firebaseio.com/kms_food_ordering_system/order.json";
 
 class FavoriteScreen extends StatefulWidget {
   FavoriteScreen({Key? key}) : super(key: key);
@@ -28,7 +31,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     get_fav();
   }
 
-  int order_quantity = 1;
   var list_ready = false;
   var favorite_list = [];
   var get_favorite_list;
@@ -44,6 +46,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             if (favorite_list.contains(get_favorite_list[i.toString()]) ==
                 false) {
               favorite_list.add(get_favorite_list[i.toString()]);
+              favorite_quantity.add(1);
               print(get_favorite_list[i.toString()]);
             }
           }
@@ -256,9 +259,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                           ),
                                         ),
                                         onPressed: () {
-                                          setState(() {
-                                            order_quantity--;
-                                          });
+                                          if (favorite_quantity[i] > 1) {
+                                            setState(() {
+                                              favorite_quantity[i]--;
+                                            });
+                                          }
                                         },
                                       ),
                                     ),
@@ -273,11 +278,29 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                         child: FlatButton.icon(
                                           icon:
                                               Icon(Icons.shopping_bag_outlined),
-                                          onPressed: () {
-                                            print(favorite_list[i]);
-                                            print("food: $i");
+                                          onPressed: () async {
+                                            var get_order_data =
+                                                await Dio().get(order);
+                                            int get_order_list =
+                                                get_order_data.data.length;
+
+                                            Dio().patch(order, data: {
+                                              (get_order_list - 1).toString(): {
+                                                "name": favorite_list[i]
+                                                    ['name'],
+                                                "vendor": favorite_list[i]
+                                                    ['vendor'],
+                                                "price": favorite_list[i]
+                                                    ['price'],
+                                                "quantity":
+                                                    favorite_quantity[i],
+                                                "from": "Wan Z",
+                                                "pic": favorite_list[i]['pic']
+                                              }
+                                            });
                                           },
-                                          label: Text("Buy: $order_quantity",
+                                          label: Text(
+                                              "Buy: ${favorite_quantity[i]}",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold)),
                                         )),
@@ -298,7 +321,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                         ),
                                         onPressed: () {
                                           setState(() {
-                                            order_quantity++;
+                                            favorite_quantity[i]++;
                                           });
                                         },
                                       ),

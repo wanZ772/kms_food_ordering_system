@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_order/favorite.dart';
 import 'package:food_order/menu_list.dart';
+import 'package:food_order/my_order.dart';
 
 class Header extends StatefulWidget {
   Header({Key? key}) : super(key: key);
@@ -127,11 +128,14 @@ class _HeaderState extends State<Header> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(40)),
                         child: FlatButton.icon(
-                            onPressed: (() => Navigator.pop(context)),
+                            onPressed: (() => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MyOrder()))),
                             icon: Icon(Icons.shopping_cart_outlined,
                                 color: Colors.grey[400]),
                             label: Text(
-                              "Your order",
+                              "My order",
                               style: TextStyle(color: Colors.grey),
                             ))),
                   ],
